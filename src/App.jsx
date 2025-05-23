@@ -23,46 +23,47 @@ const list = [
   },
 ];
 
-// List Component
-function List() {
-  return (
-    <ul>
-      {list.map(function (item) {
-        return (
-          <li key={item.objectID}>
-            <span>
-              <a href={item.url}>{item.title}</a>
-            </span>
-            <span>{item.author}</span>
-            <span>{item.num_comments}</span>
-            <span>{item.points}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
+// List Component (Arrow function + concise callback)
+const List = () => (
+  <ul>
+    {list.map((item) => (
+      <li key={item.objectID}>
+        <span><a href={item.url}>{item.title}</a></span>
+        <span>{item.author}</span>
+        <span>{item.num_comments}</span>
+        <span>{item.points}</span>
+      </li>
+    ))}
+  </ul>
+);
 
-// Search Component
-function Search() {
+// Search Component (Arrow function with handler)
+const Search = () => {
+  const handleChange = (event) => {
+    console.log(event);               // Synthetic event
+    console.log(event.target.value);  // Input value
+  };
+
   return (
     <div>
       <label htmlFor="search">Search: </label>
-      <input id="search" type="text" />
+      <input 
+        id="search" 
+        type="text" 
+        onChange={handleChange}  // Fixed syntax: removed parentheses
+      />
     </div>
   );
-}
+};
 
-// App Component (Parent)
-function App() {
-  return (
-    <div>
-      <h1>My Hacker Stories</h1>
-      <Search />
-      <hr />
-      <List />
-    </div>
-  );
-}
+// App Component (Arrow function)
+const App = () => (
+  <div>
+    <h1>My Hacker Stories</h1>
+    <Search />
+    <hr />
+    <List />
+  </div>
+);
 
 export default App;
