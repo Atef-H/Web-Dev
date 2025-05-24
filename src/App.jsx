@@ -1,37 +1,45 @@
 import React, { useState, useEffect } from 'react';
 
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+
 const App = () => {
   const [searchTerm, setSearchTerm] = useState(
     localStorage.getItem('search') || 'React'
   );
-  
-  const initialStories = [
-    {
-      title: 'React',
-      url: 'https://reactjs.org/',
-      author: 'Jordan Walke',
-      num_comments: 3,
-      points: 4,
-      objectID: 0,
-    },
-    {
-      title: 'Redux',
-      url: 'https://redux.js.org/',
-      author: 'Dan Abramov, Andrew Clark',
-      num_comments: 2,
-      points: 5,
-      objectID: 1,
-    },
-  ];
-
-  const [stories, setStories] = useState(initialStories);
+  const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
+  const [stories, setStories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('search', searchTerm);
   }, [searchTerm]);
 
-  const handleSearch = (event) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(url);
+        const result = await response.json();
+        setStories(result.hits);
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [url]);
+
+  const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
   const handleRemoveStory = (item) => {
@@ -41,22 +49,35 @@ const App = () => {
     setStories(newStories);
   };
 
-  const searchedStories = stories.filter((story) =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div>
       <h1>My Hacker Stories</h1>
+      
       <InputWithLabel
         id="search"
         value={searchTerm}
-        onInputChange={handleSearch}
+        onInputChange={handleSearchInput}
       >
         <strong>Search:</strong>
       </InputWithLabel>
+
+      <button
+        type="button"
+        disabled={!searchTerm}
+        onClick={handleSearchSubmit}
+      >
+        Submit
+      </button>
+
       <hr />
-      <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+
+      {isError && <p>Something went wrong ...</p>}
+
+      {isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List list={stories} onRemoveItem={handleRemoveStory} />
+      )}
     </div>
   );
 };
